@@ -1,4 +1,1 @@
-require(KEGGREST)
-require(tidyverse)
-
-load(".RData")
+source("data/setup-for-binder.R")

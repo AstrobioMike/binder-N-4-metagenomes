@@ -8,3 +8,4 @@ dependencies:
   - r-tidyverse
   - bioconductor-keggrest
   - r-shiny
+  - r-shinythemes

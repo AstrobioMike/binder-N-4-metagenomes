@@ -1,7 +1,7 @@
 library(KEGGREST)
 library(tidyverse)
 
-N_KO_norm_cov_tab <- read.table("KO-normalized-master-tab.tsv", sep="\t", header=TRUE)
+N_KO_norm_cov_tab <- read.table("N_KO_norm_cov.tsv", sep="\t", header=TRUE)
 
 N_KO_info_tab <- read.table("All_N_KO_info.tsv", sep = "\t", header = TRUE)
 
@@ -52,44 +52,33 @@ get_KO_info <- function( target_KO, KO_KEGG_tab = N_KO_norm_cov_tab ) {
 
 }
 
-plot_KO <- function( target_KO, tab = N_KO_norm_cov_tab ) {
-
-    # making sure specified KO term is present/was assembled/annotated
-    if ( ! target_KO %in% ( tab %>% pull(KO_ID) ) ) {
-
-        cat("\n   ", target_KO, "was not detected in our N data.\n\n")
-
-        # couldn't figure out a better way to just report this and not give an error while exiting
-        stop_no_error <- function() {
-            opt <- options(show.error.messages = FALSE)
-            on.exit(options(opt))
-            stop()
-        }
-        stop_no_error()
-    }
+plot_KO <- function( target, tab = N_KO_norm_cov_tab ) {
 
     # subsetting to target KO
-    sub_tab <- tab %>% filter(KO_ID == target_KO) %>% select(c(1:5, 10, 11, 12))
+    sub_tab <- tab %>% filter(label == target) %>% select(c(1:5, 10, 11, 12))
 
     # making long formatted version
     sub_long <- sub_tab %>% select(1:5) %>% pivot_longer(-KO_ID, names_to = "Depth", values_to = "norm_cov") %>% data.frame(check.names = FALSE)
 
     # making labels
     num_uniq_genes <- sub_tab$num_uniq_genes
+    ko_id <- sub_tab$KO_ID
     ko_name <- sub_tab$KO_name
     ko_def <- sub_tab$KO_def
-    main_lab <- paste0(target_KO, " (", num_uniq_genes, ")")
+    main_lab <- paste0(ko_id, " (", num_uniq_genes, " unique gene copies)")
     sub_lab <- paste0(ko_name, " - ", ko_def)
 
     # making plot
     plot <- ggplot() + geom_bar(data = sub_long, aes(y = norm_cov, x = Depth, fill = Depth), stat = "identity", width = 0.75) +
-    theme_bw() + labs(title = main_lab, subtitle = sub_lab, y = "Coverage per Million (CPM)") +
-    theme(axis.title.y = element_text(face = "bold"), axis.text.y = element_text(size=12)) +
-    theme(axis.title.x = element_text(face = "bold"), axis.text.x = element_text(size=12)) +
-    theme(legend.position = "none")
+        theme_bw() + labs(title = main_lab, subtitle = sub_lab, y = "Coverage per Million (CPM)") +
+        theme(axis.title.y = element_text(face = "bold", size = 15), axis.text.y = element_text(size=14)) +
+        theme(axis.title.x = element_text(face = "bold", size = 15), axis.text.x = element_text(size=15)) +
+        theme(legend.position = "none") + theme(plot.title = element_text(size = 16, face = "bold")) +
+        theme(plot.subtitle = element_text(size = 14))
 
     return(plot)
 }
+
 
 plot_all_N_KOs <- function( tab = N_KO_norm_cov_tab ) {
 
@@ -104,7 +93,7 @@ plot_all_N_KOs <- function( tab = N_KO_norm_cov_tab ) {
 
     plot <- ggplot() +
       geom_bar(data=long_tab, aes(y=norm_cov, x=Depth, fill=Depth), stat="identity", width=0.75) +
-      facet_wrap(. ~ KO_ID, scales="free_y") + theme_bw() + labs(title = "Nitrogen-related KO coverages", y = "Coverage per Million (CPM)") +
+      facet_wrap(. ~ KO_ID, scales="free_y", ncol = 10) + theme_bw() + labs(title = "Nitrogen-related KO coverages", y = "Coverage per Million (CPM)") +
       theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(), axis.title.x=element_blank()) +
       theme(legend.position="bottom", legend.title=element_text(face="bold")) + labs(fill = "Depth") +
       theme(strip.text = element_text(size = 10, face="bold"))
