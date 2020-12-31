@@ -9,3 +9,4 @@ dependencies:
   - bioconductor-keggrest
   - r-shiny
   - r-shinythemes
+  - r-shinydashboard
