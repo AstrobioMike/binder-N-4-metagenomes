@@ -1,6 +1,7 @@
 
 library(shiny)
 library(shinythemes)
+library(shinydashboard)
 
 # loading data and functions
 source("data-and-functions.R")
